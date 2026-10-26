@@ -1,0 +1,52 @@
+name: fedavg_small_scale
+
+defaults:
+  - data: CIFAR10
+  - impl: default
+  - server: honest-but-curious
+  - user: local_updates # multiuser_aggregate
+  - _self_
+
+model: 
+  name: vit_small # choices: vit_base, vit_smal, vit_custom 
+  # [embed_layer, embed_dim, num_heads, depth should be set in case of vit_custom]
+  # embed_layer: linear
+  # embed_dim: 384
+  # num_heads: 12
+  # depth: 7
+  # mlp_ratio: 1
+  patch_size: 16
+
+server:
+  # [also provide pretrained path if cifar pretrained weights are available]
+  # [for others, pretrained can be set to true or pretrained path can be provided]
+  # [for vit_small and vit_base, pretrained can be set to true if ImageNet weights needs to be used]
+  # [or pretrained path can be provided if pretrained weights for CIFAR10, CIFAR100 or other datasets are available]
+  pretrained: false
+  pretrained_path: null # Enter pretrianed model path here; pretrained should be set ot false in that case
+
+# model: vit_small # Will also work
+
+# Optional ViT PEFT configuration.
+peft:
+  enabled: true
+  type: lora  # choices: vpt, lora
+  lora:
+    rank: 64
+    alpha: 128
+    dropout: 0.0
+    target_modules: [q, k, v] # choices q, k, v, mlp
+    pop_index: 0 # 0 for lora, 2 for vpt (after the first two blocks of the transformer)
+    initialisation: standard # choices: normal, uniform, standard, lora_one
+    # [The below fields are for LoRA-One initialization, and are ignored if initialisation is not set to lora_one
+    gamma: 128
+    probe_batch_size: 128
+    probe_user_offset: 1
+
+user:
+  provide_labels: True
+  num_data_points: 1
+
+# Server and user:
+num_queries: 1
+num_users: 10

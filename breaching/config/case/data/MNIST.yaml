@@ -1,0 +1,36 @@
+name: MNIST
+modality: vision
+task: classification
+
+path: "${hydra:runtime.cwd}/breaching/dataset"
+size: 60_000
+classes: 10
+shape:
+  - 1
+  - 28
+  - 28
+
+# Preprocessing
+normalize: True
+mean:
+  - 0.1307
+std:
+  - 0.3081
+
+# Data Augmentations
+augmentations_train:
+  RandomCrop:
+    - 28
+    - 4
+augmentations_val:
+
+# Federated Learning specifics:
+default_clients: 10
+partition: random 
+examples_from_split: validation
+
+# Data-specific implementation constants:
+batch_size: 128
+caching: False
+defaults:
+  - db: none 

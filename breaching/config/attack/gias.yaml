@@ -1,0 +1,64 @@
+defaults:
+  - _default_optimization_attack
+  - _self_
+type: generativegia
+attack_type: gias
+
+objective:
+  type: cosine-similarity
+  scale: 1.0 # need to have a much smaller scale like 0.0001 for euclidean objectives
+  posembed_scale: 0.1
+  task_regularization: 0.0
+  posembed_trainable: False # This belongs to attack strategies, hence should be defined here.
+  apply_block_pos_embed: False
+  weight_start: 1.0
+  weight_end: 1.0
+
+
+generator:
+  z_dim: 100
+  ngf: 64
+  nc: 3
+  type: dcgan
+  network_wts: "file://${hydra:runtime.original_cwd}/breaching/pretrained/DCGAN/netG_epoch_199.pth"
+  # type: styleganxl
+  # network_wts: "${hydra:runtime.cwd}/breaching/pretrained/StyleGANXL/cifar10.pkl"
+  # type: biggan
+  # network_wts: "${hydra:runtime.cwd}/breaching/pretrained/BigGAN/biggan-deep-256-pytorch_model.bin"
+  # type: stylegan2
+  # network_wts: "${hydra:runtime.cwd}/breaching/pretrained/StyleGAN2/cifar10.pkl"
+
+restarts:
+  num_trials: 1
+  scoring: "cosine-similarity"
+
+optim:
+  optimizer: adam
+  signed:
+  step_size: 0.03
+  boxed: True
+  max_iterations: 2_000
+  step_size_decay: step-lr
+
+  callback: 500 # Print objective value every callback many iterations
+
+optim_w:
+  optimizer: adam
+  signed: 
+  step_size: 0.0005
+  boxed: False
+  max_iterations: 8_000
+  step_size_decay: step-lr
+  callback: 1000 # Print objective value every callback many iterations
+
+regularization:
+  total_variation:
+    scale: 1e-4
+    # 0.2 # The old version did not take the mean dx + dy as the new version, so this corresponds to 0.1 in the old repo
+    inner_exp: 1
+    outer_exp: 1
+  l2_regularization:
+    scale: 0.0001
+  group_lazy_regularization:
+    parallel: True
+    scale: 1e-4
